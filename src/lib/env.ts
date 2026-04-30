@@ -6,6 +6,9 @@ const envSchema = z.object({
     .string()
     .min(1, "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is required"),
   CLERK_SECRET_KEY: z.string().min(1, "CLERK_SECRET_KEY is required"),
+  AWS_ACCOUNT_ID: z.string().length(12, "AWS_ACCOUNT_ID must be 12 digits"),
+  AWS_ACCESS_KEY_ID: z.string().min(1, "AWS_ACCESS_KEY_ID is required"),
+  AWS_SECRET_ACCESS_KEY: z.string().min(1, "AWS_SECRET_ACCESS_KEY is required"),
 });
 
 function validateEnv() {
