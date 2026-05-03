@@ -2,17 +2,19 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { assumeRole, verifyConnection } from "@/lib/aws/assume-role";
-import {
-  getAwsConnection,
-  upsertAwsConnection,
-} from "@/lib/db/queries/aws-connections";
-import { randomUUID } from "crypto";
+import { upsertAwsConnection } from "@/lib/db/queries/aws-connections";
 
 const connectSchema = z.object({
   roleArn: z
     .string()
     .regex(/^arn:aws:iam::\d{12}:role\/.+$/, "Invalid IAM role ARN format"),
   region: z.string().regex(/^[a-z]{2}-[a-z]+-\d$/, "Invalid AWS region format"),
+  externalId: z
+    .string()
+    .regex(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+      "Invalid external ID format",
+    ),
 });
 
 export async function POST(request: Request) {
@@ -25,15 +27,12 @@ export async function POST(request: Request) {
   const parsed = connectSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+      { error: "Invalid input", details: z.flattenError(parsed.error).fieldErrors },
       { status: 400 },
     );
   }
 
-  const { roleArn, region } = parsed.data;
-
-  const existing = await getAwsConnection(userId);
-  const externalId = existing?.externalId ?? randomUUID();
+  const { roleArn, region, externalId } = parsed.data;
 
   try {
     const credentials = await assumeRole(roleArn, externalId);

@@ -15,9 +15,10 @@ import {
 
 interface ConnectFormProps {
   quickCreateUrl: string;
+  externalId: string;
 }
 
-export function ConnectForm({ quickCreateUrl }: ConnectFormProps) {
+export function ConnectForm({ quickCreateUrl, externalId }: ConnectFormProps) {
   const router = useRouter();
   const [roleArn, setRoleArn] = useState("");
   const [region, setRegion] = useState("us-east-1");
@@ -33,7 +34,7 @@ export function ConnectForm({ quickCreateUrl }: ConnectFormProps) {
       const res = await fetch("/api/aws/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roleArn, region }),
+        body: JSON.stringify({ roleArn, region, externalId }),
       });
 
       if (!res.ok) {

@@ -9,6 +9,9 @@ const envSchema = z.object({
   AWS_ACCOUNT_ID: z.string().length(12, "AWS_ACCOUNT_ID must be 12 digits"),
   AWS_ACCESS_KEY_ID: z.string().min(1, "AWS_ACCESS_KEY_ID is required"),
   AWS_SECRET_ACCESS_KEY: z.string().min(1, "AWS_SECRET_ACCESS_KEY is required"),
+  CFN_TEMPLATE_URL: z
+    .string()
+    .regex(/^https:\/\/.+/, "CFN_TEMPLATE_URL must be a valid S3 https URL"),
 });
 
 function validateEnv() {

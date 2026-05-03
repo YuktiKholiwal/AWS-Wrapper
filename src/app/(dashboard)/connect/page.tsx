@@ -19,5 +19,5 @@ export default async function ConnectPage() {
   const externalId = randomUUID();
   const quickCreateUrl = getQuickCreateUrl(externalId, "us-east-1");
 
-  return <ConnectForm quickCreateUrl={quickCreateUrl} />;
+  return <ConnectForm quickCreateUrl={quickCreateUrl} externalId={externalId} />;
 }
