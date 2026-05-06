@@ -1,4 +1,47 @@
-# Manual Testing — Phase 1
+# Manual Testing
+
+## Phase 2 — Static Site Deploy
+
+### Prerequisites
+
+- AWS account connected (Phase 1 complete)
+- Plot running locally with `pnpm dev`
+- A folder with a static site (at minimum an `index.html`)
+
+### Deploy a static site
+
+1. Navigate to `/sites` — click "New Site"
+2. Enter a site name (lowercase, hyphens OK, e.g. `my-test-site`)
+3. Drag and drop your static site folder (or click "Select a folder")
+4. Verify the file list shows your files
+5. Click "Deploy"
+6. Wait for provisioning (5-15 minutes for CloudFront). The status page polls automatically.
+7. Once status changes to "live", you'll be redirected to the site detail page
+8. Click the CloudFront URL — your site should load
+
+### Redeploy
+
+1. On the site detail page, select a new folder under "Redeploy"
+2. Click "Redeploy" — files upload to S3 and CloudFront is invalidated
+3. Wait a few minutes for CloudFront cache to clear, then verify new content
+
+### Delete a site
+
+1. On the site detail page, click "Delete Site"
+2. Confirm the deletion
+3. Verify you're redirected to `/sites`
+4. In AWS Console, verify the CloudFormation stack `plot-site-<id>` is deleted
+5. Verify the S3 bucket is gone
+
+### Failure modes
+
+- Create a site with invalid name (uppercase, special chars) — should show validation error
+- Try to deploy without selecting files — should show error
+- Delete a site while it's still provisioning — should still clean up
+
+---
+
+## Phase 1 — AWS Connection
 
 ## AWS Connection Flow
 
