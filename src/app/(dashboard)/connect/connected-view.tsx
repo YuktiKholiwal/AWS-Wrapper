@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,7 +25,10 @@ export function ConnectedView({ connection }: ConnectedViewProps) {
     setDisconnecting(true);
     try {
       await fetch("/api/aws/connection", { method: "DELETE" });
+      toast.success("AWS account disconnected.");
       router.refresh();
+    } catch {
+      toast.error("Failed to disconnect. Please try again.");
     } finally {
       setDisconnecting(false);
     }

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,6 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FileUpload } from "@/components/file-upload";
+import { DeploymentList } from "./deployment-list";
+import { Copy, ExternalLink } from "lucide-react";
 import type { Site } from "@/lib/db/queries/sites";
 import type { Deployment } from "@/lib/db/queries/deployments";
 
@@ -23,6 +26,11 @@ interface FileEntry {
 interface SiteDetailProps {
   site: Site;
   deployments: Deployment[];
+}
+
+function copyToClipboard(text: string, label: string) {
+  navigator.clipboard.writeText(text);
+  toast.success(`${label} copied to clipboard`);
 }
 
 export function SiteDetail({ site, deployments }: SiteDetailProps) {
@@ -62,9 +70,12 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
       }
 
       setFiles([]);
+      toast.success("Files uploaded! CloudFront may take a few minutes to update.");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Redeploy failed");
+      const msg = err instanceof Error ? err.message : "Redeploy failed";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setUploading(false);
     }
@@ -82,13 +93,18 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
         const data = await res.json();
         throw new Error(data.error ?? "Delete failed");
       }
+      toast.success("Site deleted.");
       router.push("/sites");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed");
+      const msg = err instanceof Error ? err.message : "Delete failed";
+      setError(msg);
+      toast.error(msg);
       setDeleting(false);
     }
   }
+
+  const consoleRegion = "us-east-1";
 
   return (
     <div className="space-y-6">
@@ -116,15 +132,73 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
           )}
         </CardHeader>
         <CardContent className="space-y-2">
-          <Detail label="Stack" value={site.stackName} />
+          <DetailRow label="Stack" value={site.stackName}>
+            <CopyButton
+              value={site.stackName}
+              label="Stack name"
+            />
+            <ConsoleLink
+              href={`https://${consoleRegion}.console.aws.amazon.com/cloudformation/home?region=${consoleRegion}#/stacks?filteringText=${site.stackName}`}
+            />
+          </DetailRow>
           {site.bucketName && (
-            <Detail label="Bucket" value={site.bucketName} />
+            <DetailRow label="Bucket" value={site.bucketName}>
+              <CopyButton
+                value={site.bucketName}
+                label="Bucket name"
+              />
+              <ConsoleLink
+                href={`https://s3.console.aws.amazon.com/s3/buckets/${site.bucketName}`}
+              />
+            </DetailRow>
           )}
           {site.distributionId && (
-            <Detail label="Distribution" value={site.distributionId} />
+            <DetailRow
+              label="Distribution"
+              value={site.distributionId}
+            >
+              <CopyButton
+                value={site.distributionId}
+                label="Distribution ID"
+              />
+              <ConsoleLink
+                href={`https://${consoleRegion}.console.aws.amazon.com/cloudfront/v4/home#/distributions/${site.distributionId}`}
+              />
+            </DetailRow>
+          )}
+          {site.cloudfrontUrl && (
+            <DetailRow label="URL" value={`https://${site.cloudfrontUrl}`}>
+              <CopyButton
+                value={`https://${site.cloudfrontUrl}`}
+                label="URL"
+              />
+            </DetailRow>
           )}
         </CardContent>
       </Card>
+
+      {site.status === "failed" && (
+        <Card className="border-destructive">
+          <CardHeader>
+            <CardTitle className="text-destructive text-base">
+              Deployment Failed
+            </CardTitle>
+            <CardDescription>
+              The CloudFormation stack failed to create. Check the{" "}
+              <a
+                href={`https://${consoleRegion}.console.aws.amazon.com/cloudformation/home?region=${consoleRegion}#/stacks?filteringText=${site.stackName}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                AWS CloudFormation console
+              </a>{" "}
+              for details. Common causes: resource name conflicts, permission
+              issues, or AWS service limits.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
 
       {site.status === "live" && (
         <Card>
@@ -153,41 +227,7 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
         </Card>
       )}
 
-      {deployments.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Deployments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {deployments.map((dep) => (
-                <li
-                  key={dep.id}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <span className="text-muted-foreground font-mono text-xs">
-                    {dep.startedAt.toLocaleString()}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    {dep.fileCount && (
-                      <span className="text-muted-foreground text-xs">
-                        {dep.fileCount} files
-                      </span>
-                    )}
-                    <Badge
-                      variant={
-                        dep.status === "live" ? "default" : "destructive"
-                      }
-                    >
-                      {dep.status}
-                    </Badge>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+      <DeploymentList deployments={deployments} />
 
       <Button
         variant="destructive"
@@ -201,11 +241,48 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
   );
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
+function DetailRow({
+  label,
+  value,
+  children,
+}: {
+  label: string;
+  value: string;
+  children?: React.ReactNode;
+}) {
   return (
-    <div className="flex justify-between text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-mono text-xs">{value}</span>
+    <div className="flex items-center justify-between gap-2 text-sm">
+      <span className="text-muted-foreground shrink-0">{label}</span>
+      <div className="flex items-center gap-1">
+        <span className="truncate font-mono text-xs">{value}</span>
+        {children}
+      </div>
     </div>
+  );
+}
+
+function CopyButton({ value, label }: { value: string; label: string }) {
+  return (
+    <button
+      onClick={() => copyToClipboard(value, label)}
+      className="text-muted-foreground hover:text-foreground shrink-0 p-0.5"
+      title={`Copy ${label}`}
+    >
+      <Copy className="h-3 w-3" />
+    </button>
+  );
+}
+
+function ConsoleLink({ href }: { href: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-muted-foreground hover:text-foreground shrink-0 p-0.5"
+      title="Open in AWS Console"
+    >
+      <ExternalLink className="h-3 w-3" />
+    </a>
   );
 }

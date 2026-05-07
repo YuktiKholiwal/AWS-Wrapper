@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -120,10 +121,13 @@ export function NewSiteForm() {
 
       setStep("done");
       setStatusText("Deployment complete!");
+      toast.success("Site deployed successfully!");
 
       setTimeout(() => router.push(`/sites/${site.id}`), 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Deployment failed");
+      const msg = err instanceof Error ? err.message : "Deployment failed";
+      setError(msg);
+      toast.error(msg);
       setStep("configure");
     }
   }
