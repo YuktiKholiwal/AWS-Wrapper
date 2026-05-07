@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getAwsConnection } from "@/lib/db/queries/aws-connections";
 import { getSitesByUser } from "@/lib/db/queries/sites";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Globe, Plus } from "lucide-react";
 
 const statusVariant: Record<
@@ -41,11 +42,12 @@ export default async function SitesPage() {
         <p className="text-muted-foreground mt-2 max-w-sm text-sm">
           Deploy your first static site to your AWS account.
         </p>
-        <Link href="/sites/new" className="mt-6">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Site
-          </Button>
+        <Link
+          href="/sites/new"
+          className={cn(buttonVariants(), "mt-6")}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          New Site
         </Link>
       </div>
     );
@@ -55,17 +57,18 @@ export default async function SitesPage() {
     <div className="mx-auto w-full max-w-2xl">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Sites</h1>
-        <Link href="/sites/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Site
-          </Button>
+        <Link
+          href="/sites/new"
+          className={cn(buttonVariants())}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          New Site
         </Link>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-4">
         {sites.map((site) => (
-          <Link key={site.id} href={`/sites/${site.id}`}>
-            <Card className="transition-colors hover:bg-muted/50">
+          <Link key={site.id} href={`/sites/${site.id}`} className="block">
+            <Card className="cursor-pointer transition-colors duration-150 hover:border-foreground/20 hover:bg-muted/60">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">{site.name}</CardTitle>

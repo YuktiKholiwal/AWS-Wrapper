@@ -1,5 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { getAwsConnection } from "@/lib/db/queries/aws-connections";
 import { getSite } from "@/lib/db/queries/sites";
 import { getDeploymentsBySite } from "@/lib/db/queries/deployments";
@@ -23,9 +25,20 @@ export default async function SiteDetailPage({ params }: PageProps) {
 
   const deployments = await getDeploymentsBySite(site.id);
 
+  const backLink = (
+    <Link
+      href="/sites"
+      className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1 text-sm transition-colors"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      Back to sites
+    </Link>
+  );
+
   if (site.status === "provisioning" || site.status === "pending") {
     return (
       <div className="mx-auto w-full max-w-lg">
+        {backLink}
         <DeployStatus siteId={site.id} siteName={site.name} />
       </div>
     );
@@ -33,6 +46,7 @@ export default async function SiteDetailPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto w-full max-w-lg">
+      {backLink}
       <SiteDetail site={site} deployments={deployments} />
     </div>
   );

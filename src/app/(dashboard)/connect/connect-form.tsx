@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,14 +40,22 @@ export function ConnectForm({ quickCreateUrl, externalId }: ConnectFormProps) {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error ?? "Connection failed");
+        const msg = data.error ?? "Connection failed";
+        setError(
+          msg.includes("Access denied") || msg.includes("AssumeRole")
+            ? "Could not assume the IAM role. Make sure the CloudFormation stack finished creating and the Role ARN is correct."
+            : msg.includes("ExternalId")
+              ? "External ID mismatch. Please delete the old CloudFormation stack, refresh this page, and create a new one."
+              : msg,
+        );
         return;
       }
 
+      toast.success("AWS account connected!");
       router.push("/sites");
       router.refresh();
     } catch {
-      setError("Network error. Please try again.");
+      setError("Network error. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
