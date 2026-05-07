@@ -8,21 +8,21 @@ import { cn } from "@/lib/utils";
 const features = [
   {
     icon: Globe,
-    title: "Your AWS, your resources",
+    title: "Your account, your resources",
     description:
-      "Everything deploys to your AWS account. S3 bucket, CloudFront distribution — you own it all. We never touch your data.",
+      "Everything deploys to your own account. File hosting, a fast global network for your site — you own it all. We never touch your data.",
   },
   {
     icon: Shield,
     title: "No credentials stored",
     description:
-      "We use a cross-account IAM role with temporary credentials. Nothing is saved. Every session is fresh.",
+      "We use a secure permission link with temporary access. Nothing is saved. Every session is fresh.",
   },
   {
     icon: Zap,
-    title: "One-click infrastructure",
+    title: "One-click setup",
     description:
-      "CloudFormation handles the setup. Private S3 bucket, HTTPS via CloudFront, SPA support — all provisioned automatically.",
+      "One click creates everything: private file storage, HTTPS, single-page app support — all set up automatically.",
   },
 ];
 
@@ -55,7 +55,7 @@ export default async function Home() {
         </h1>
         <p className="text-muted-foreground mt-6 max-w-lg text-lg">
           You own everything. We don&apos;t store your credentials.
-          CloudFront&nbsp;+&nbsp;S3, set up in one click.
+          Your own hosting, set up in one click.
         </p>
         <div className="mt-8 flex gap-3">
           <Link
@@ -88,7 +88,7 @@ export default async function Home() {
       </section>
 
       <footer className="text-muted-foreground border-t px-6 py-6 text-center text-sm">
-        Plot — AWS deployment for humans.
+        Plot — deploy your site, own your hosting.
       </footer>
     </main>
   );

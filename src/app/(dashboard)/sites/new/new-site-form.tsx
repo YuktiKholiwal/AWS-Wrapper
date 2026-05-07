@@ -48,7 +48,7 @@ export function NewSiteForm() {
       if (data.site.status === "failed") return false;
 
       setStatusText(
-        `Creating infrastructure... (${Math.floor((i + 1) * (delay / 1000))}s)`,
+        `Setting up your site... (${Math.floor((i + 1) * (delay / 1000))}s)`,
       );
     }
     return false;
@@ -106,12 +106,12 @@ export function NewSiteForm() {
       const { site } = await createRes.json();
 
       setStatusText(
-        "Provisioning S3 bucket and CloudFront distribution...",
+        "Setting up hosting... This usually takes 5-15 minutes.",
       );
       const ready = await pollSiteStatus(site.id);
       if (!ready) {
         throw new Error(
-          "Infrastructure provisioning failed. Check AWS CloudFormation.",
+          "Setup failed. Try again with a different site name, or check that your account connection is still active.",
         );
       }
 
