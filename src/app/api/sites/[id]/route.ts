@@ -6,6 +6,7 @@ import { assumeRole } from "@/lib/aws/assume-role";
 import { getStackStatus } from "@/lib/aws/cloudformation";
 import { deleteStack } from "@/lib/aws/cloudformation";
 import { emptyBucket } from "@/lib/aws/s3-sync";
+import { deleteCertificate } from "@/lib/aws/acm";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -87,6 +88,14 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
         connection.roleArn,
         connection.externalId,
       );
+
+      if (site.certificateArn) {
+        try {
+          await deleteCertificate(credentials, site.certificateArn);
+        } catch {
+          // Certificate may already be deleted
+        }
+      }
 
       if (site.bucketName) {
         await emptyBucket(credentials, connection.region, site.bucketName);

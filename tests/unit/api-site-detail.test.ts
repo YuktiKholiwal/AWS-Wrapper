@@ -62,6 +62,11 @@ const fakeSite = {
   bucketName: "plot-site-site1",
   distributionId: "E1234",
   status: "provisioning" as const,
+  customDomain: null,
+  domainStatus: "none" as const,
+  certificateArn: null,
+  validationCname: null,
+  validationValue: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

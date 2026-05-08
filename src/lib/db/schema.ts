@@ -21,6 +21,14 @@ export const deploymentStatusEnum = pgEnum("deployment_status", [
   "failed",
 ]);
 
+export const domainStatusEnum = pgEnum("domain_status", [
+  "none",
+  "pending_validation",
+  "validating",
+  "active",
+  "failed",
+]);
+
 export const awsConnections = pgTable("aws_connections", {
   userId: text("user_id").primaryKey(),
   roleArn: text("role_arn").notNull(),
@@ -41,6 +49,11 @@ export const sites = pgTable("sites", {
   bucketName: text("bucket_name"),
   distributionId: text("distribution_id"),
   status: siteStatusEnum("status").notNull().default("pending"),
+  customDomain: text("custom_domain"),
+  domainStatus: domainStatusEnum("domain_status").notNull().default("none"),
+  certificateArn: text("certificate_arn"),
+  validationCname: text("validation_cname"),
+  validationValue: text("validation_value"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

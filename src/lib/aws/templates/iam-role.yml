@@ -49,6 +49,14 @@ Resources:
                 Effect: Allow
                 Action: "cloudfront:*"
                 Resource: "*"
+              - Sid: AcmCertificateManagement
+                Effect: Allow
+                Action:
+                  - "acm:RequestCertificate"
+                  - "acm:DescribeCertificate"
+                  - "acm:DeleteCertificate"
+                  - "acm:ListCertificates"
+                Resource: "*"
               - Sid: CloudFrontServiceLinkedRole
                 Effect: Allow
                 Action: "iam:CreateServiceLinkedRole"
