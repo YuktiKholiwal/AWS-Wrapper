@@ -62,12 +62,12 @@ export function DeployStatus({ siteId, siteName }: DeployStatusProps) {
         <CardTitle>{siteName}</CardTitle>
         <CardDescription>
           {status === "provisioning"
-            ? "Creating S3 bucket and CloudFront distribution..."
+            ? "Setting up your site's hosting..."
             : status === "pending"
-              ? "Preparing deployment..."
+              ? "Getting things ready..."
               : status === "failed"
-                ? "Deployment failed"
-                : "Infrastructure is ready!"}
+                ? "Something went wrong"
+                : "Your site is ready!"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -80,8 +80,8 @@ export function DeployStatus({ siteId, siteName }: DeployStatusProps) {
         </div>
         <p className="text-muted-foreground text-center text-xs">
           {status === "failed"
-            ? "Check AWS CloudFormation for details."
-            : `This usually takes 5-15 minutes. Elapsed: ${formatTime(elapsed)}`}
+            ? "Try creating a new site with a different name, or check that your account connection is still active."
+            : `We're setting up a global network to make your site fast. This usually takes 5-15 minutes. Elapsed: ${formatTime(elapsed)}`}
         </p>
       </CardContent>
     </Card>

@@ -14,7 +14,13 @@ import {
 } from "@/components/ui/card";
 import { FileUpload } from "@/components/file-upload";
 import { DeploymentList } from "./deployment-list";
-import { Copy, ExternalLink } from "lucide-react";
+import {
+  copyToClipboard,
+  DetailRow,
+  CopyButton,
+  ConsoleLink,
+} from "./detail-helpers";
+import { ExternalLink } from "lucide-react";
 import type { Site } from "@/lib/db/queries/sites";
 import type { Deployment } from "@/lib/db/queries/deployments";
 
@@ -26,11 +32,6 @@ interface FileEntry {
 interface SiteDetailProps {
   site: Site;
   deployments: Deployment[];
-}
-
-function copyToClipboard(text: string, label: string) {
-  navigator.clipboard.writeText(text);
-  toast.success(`${label} copied to clipboard`);
 }
 
 export function SiteDetail({ site, deployments }: SiteDetailProps) {
@@ -70,7 +71,9 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
       }
 
       setFiles([]);
-      toast.success("Files uploaded! CloudFront may take a few minutes to update.");
+      toast.success(
+        "Files uploaded! Your site may take a few minutes to update worldwide.",
+      );
       router.refresh();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Redeploy failed";
@@ -82,7 +85,11 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
   }
 
   async function handleDelete() {
-    if (!confirm("Delete this site? This will remove all AWS resources.")) {
+    if (
+      !confirm(
+        "Delete this site? This will permanently delete your site and all its files.",
+      )
+    ) {
       return;
     }
 
@@ -104,6 +111,9 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
     }
   }
 
+  const siteUrl = site.cloudfrontUrl
+    ? `https://${site.cloudfrontUrl}`
+    : null;
   const consoleRegion = "us-east-1";
 
   return (
@@ -118,62 +128,60 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
               {site.status}
             </Badge>
           </div>
-          {site.cloudfrontUrl && (
-            <CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {siteUrl && (
+            <div className="flex items-center gap-2">
               <a
-                href={`https://${site.cloudfrontUrl}`}
+                href={siteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline"
+                className="bg-primary text-primary-foreground inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors hover:opacity-90"
               >
-                https://{site.cloudfrontUrl}
+                <ExternalLink className="h-4 w-4" />
+                Visit your site
               </a>
-            </CardDescription>
+              <button
+                onClick={() => copyToClipboard(siteUrl, "Site URL")}
+                className="text-muted-foreground hover:text-foreground text-sm underline underline-offset-2"
+              >
+                Copy URL
+              </button>
+            </div>
           )}
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <DetailRow label="Stack" value={site.stackName}>
-            <CopyButton
-              value={site.stackName}
-              label="Stack name"
-            />
-            <ConsoleLink
-              href={`https://${consoleRegion}.console.aws.amazon.com/cloudformation/home?region=${consoleRegion}#/stacks?filteringText=${site.stackName}`}
-            />
-          </DetailRow>
-          {site.bucketName && (
-            <DetailRow label="Bucket" value={site.bucketName}>
-              <CopyButton
-                value={site.bucketName}
-                label="Bucket name"
-              />
-              <ConsoleLink
-                href={`https://s3.console.aws.amazon.com/s3/buckets/${site.bucketName}`}
-              />
-            </DetailRow>
-          )}
-          {site.distributionId && (
-            <DetailRow
-              label="Distribution"
-              value={site.distributionId}
-            >
-              <CopyButton
-                value={site.distributionId}
-                label="Distribution ID"
-              />
-              <ConsoleLink
-                href={`https://${consoleRegion}.console.aws.amazon.com/cloudfront/v4/home#/distributions/${site.distributionId}`}
-              />
-            </DetailRow>
-          )}
-          {site.cloudfrontUrl && (
-            <DetailRow label="URL" value={`https://${site.cloudfrontUrl}`}>
-              <CopyButton
-                value={`https://${site.cloudfrontUrl}`}
-                label="URL"
-              />
-            </DetailRow>
-          )}
+
+          <details className="text-sm">
+            <summary className="text-muted-foreground cursor-pointer select-none hover:text-foreground">
+              Technical details
+            </summary>
+            <div className="mt-3 space-y-2">
+              <DetailRow label="Stack" value={site.stackName}>
+                <CopyButton value={site.stackName} label="Stack name" />
+                <ConsoleLink
+                  href={`https://${consoleRegion}.console.aws.amazon.com/cloudformation/home?region=${consoleRegion}#/stacks?filteringText=${site.stackName}`}
+                />
+              </DetailRow>
+              {site.bucketName && (
+                <DetailRow label="Bucket" value={site.bucketName}>
+                  <CopyButton value={site.bucketName} label="Bucket name" />
+                  <ConsoleLink
+                    href={`https://s3.console.aws.amazon.com/s3/buckets/${site.bucketName}`}
+                  />
+                </DetailRow>
+              )}
+              {site.distributionId && (
+                <DetailRow label="Distribution" value={site.distributionId}>
+                  <CopyButton
+                    value={site.distributionId}
+                    label="Distribution ID"
+                  />
+                  <ConsoleLink
+                    href={`https://${consoleRegion}.console.aws.amazon.com/cloudfront/v4/home#/distributions/${site.distributionId}`}
+                  />
+                </DetailRow>
+              )}
+            </div>
+          </details>
         </CardContent>
       </Card>
 
@@ -181,31 +189,34 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="text-destructive text-base">
-              Deployment Failed
+              Something went wrong
             </CardTitle>
             <CardDescription>
-              The CloudFormation stack failed to create. Check the{" "}
-              <a
-                href={`https://${consoleRegion}.console.aws.amazon.com/cloudformation/home?region=${consoleRegion}#/stacks?filteringText=${site.stackName}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                AWS CloudFormation console
-              </a>{" "}
-              for details. Common causes: resource name conflicts, permission
-              issues, or AWS service limits.
+              Your site couldn&apos;t be set up. Here&apos;s what to try:
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <ol className="text-muted-foreground list-inside list-decimal space-y-1 text-sm">
+              <li>Create a new site with a different name</li>
+              <li>
+                Make sure your account connection is still active (check the
+                Connection page)
+              </li>
+              <li>
+                If this keeps happening, your account may have a service limit
+                — try again later
+              </li>
+            </ol>
+          </CardContent>
         </Card>
       )}
 
       {site.status === "live" && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Redeploy</CardTitle>
+            <CardTitle className="text-base">Update your site</CardTitle>
             <CardDescription>
-              Upload new files to replace the current deployment.
+              Upload new files to replace the current version.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -221,7 +232,7 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
               disabled={files.length === 0 || uploading}
               className="w-full"
             >
-              {uploading ? "Uploading..." : "Redeploy"}
+              {uploading ? "Uploading..." : "Update site"}
             </Button>
           </CardContent>
         </Card>
@@ -238,51 +249,5 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
         {deleting ? "Deleting..." : "Delete Site"}
       </Button>
     </div>
-  );
-}
-
-function DetailRow({
-  label,
-  value,
-  children,
-}: {
-  label: string;
-  value: string;
-  children?: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-2 text-sm">
-      <span className="text-muted-foreground shrink-0">{label}</span>
-      <div className="flex items-center gap-1">
-        <span className="truncate font-mono text-xs">{value}</span>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function CopyButton({ value, label }: { value: string; label: string }) {
-  return (
-    <button
-      onClick={() => copyToClipboard(value, label)}
-      className="text-muted-foreground hover:text-foreground shrink-0 p-0.5"
-      title={`Copy ${label}`}
-    >
-      <Copy className="h-3 w-3" />
-    </button>
-  );
-}
-
-function ConsoleLink({ href }: { href: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-muted-foreground hover:text-foreground shrink-0 p-0.5"
-      title="Open in AWS Console"
-    >
-      <ExternalLink className="h-3 w-3" />
-    </a>
   );
 }

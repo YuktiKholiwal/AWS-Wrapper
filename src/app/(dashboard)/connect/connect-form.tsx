@@ -43,15 +43,15 @@ export function ConnectForm({ quickCreateUrl, externalId }: ConnectFormProps) {
         const msg = data.error ?? "Connection failed";
         setError(
           msg.includes("Access denied") || msg.includes("AssumeRole")
-            ? "Could not assume the IAM role. Make sure the CloudFormation stack finished creating and the Role ARN is correct."
+            ? "Could not connect. Make sure the setup finished (status shows CREATE_COMPLETE) and that you copied the correct value from the Outputs tab."
             : msg.includes("ExternalId")
-              ? "External ID mismatch. Please delete the old CloudFormation stack, refresh this page, and create a new one."
+              ? "This connection code doesn't match. Go back to AWS, delete the previous setup, refresh this page, and try again from Step 1."
               : msg,
         );
         return;
       }
 
-      toast.success("AWS account connected!");
+      toast.success("Account connected!");
       router.push("/sites");
       router.refresh();
     } catch {
@@ -63,54 +63,83 @@ export function ConnectForm({ quickCreateUrl, externalId }: ConnectFormProps) {
 
   return (
     <div className="mx-auto w-full max-w-lg">
-      <h1 className="mb-6 text-2xl font-semibold">Connect AWS Account</h1>
+      <h1 className="mb-6 text-2xl font-semibold">Connect Your Account</h1>
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Step 1</CardTitle>
+            <CardTitle>Step 1: Open the setup page</CardTitle>
             <CardDescription>
-              Install the Plot IAM role in your AWS account.
+              This opens a page in your AWS account that creates a secure
+              link between your account and Plot. You won&apos;t be charged
+              for this.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <a href={quickCreateUrl} target="_blank" rel="noopener noreferrer">
-              <Button className="w-full">Open AWS CloudFormation</Button>
+              <Button className="w-full">Open setup page in AWS</Button>
             </a>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Step 2</CardTitle>
+            <CardTitle>Step 2: Approve the setup</CardTitle>
             <CardDescription>
-              In AWS, check &quot;I acknowledge that AWS CloudFormation might
-              create IAM resources&quot; and click &quot;Create stack&quot;.
-              Wait for the stack to finish.
+              On the page that opened, follow these steps:
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <ol className="text-muted-foreground list-inside list-decimal space-y-2 text-sm">
+              <li>Scroll to the bottom of the page</li>
+              <li>
+                Check the box that says{" "}
+                <span className="text-foreground font-medium">
+                  &quot;I acknowledge...&quot;
+                </span>
+              </li>
+              <li>
+                Click the orange{" "}
+                <span className="text-foreground font-medium">
+                  &quot;Create stack&quot;
+                </span>{" "}
+                button
+              </li>
+              <li>
+                Wait until the status shows{" "}
+                <span className="text-foreground font-medium">
+                  CREATE_COMPLETE
+                </span>{" "}
+                (about 1-2 minutes)
+              </li>
+            </ol>
+          </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Step 3</CardTitle>
+            <CardTitle>Step 3: Paste your connection code</CardTitle>
             <CardDescription>
-              Copy the Role ARN from the stack Outputs tab and paste it below.
+              Once the status says CREATE_COMPLETE: click the{" "}
+              <span className="text-foreground font-medium">Outputs</span>{" "}
+              tab, copy the value next to{" "}
+              <span className="text-foreground font-medium">RoleArn</span>,
+              and paste it below.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="roleArn">Role ARN</Label>
+                <Label htmlFor="roleArn">Connection code</Label>
                 <Input
                   id="roleArn"
-                  placeholder="arn:aws:iam::123456789012:role/plot-cross-account-..."
+                  placeholder="Paste the value from the Outputs tab"
                   value={roleArn}
                   onChange={(e) => setRoleArn(e.target.value)}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="region">AWS Region</Label>
+                <Label htmlFor="region">Region</Label>
                 <Input
                   id="region"
                   value={region}

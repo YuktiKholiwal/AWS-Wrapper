@@ -36,16 +36,18 @@ export function ConnectedView({ connection }: ConnectedViewProps) {
 
   return (
     <div className="mx-auto w-full max-w-lg">
-      <h1 className="mb-6 text-2xl font-semibold">AWS Connection</h1>
+      <h1 className="mb-6 text-2xl font-semibold">Account Connection</h1>
       <Card>
         <CardHeader>
           <CardTitle>Connected</CardTitle>
-          <CardDescription>Your AWS account is linked to Plot.</CardDescription>
+          <CardDescription>
+            Your account is connected and ready to deploy.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Detail label="Account ID" value={connection.awsAccountId} />
+          <Detail label="Account" value={connection.awsAccountId} />
           <Detail label="Region" value={connection.region} />
-          <Detail label="Role ARN" value={connection.roleArn} />
+          <Detail label="Connection code" value={connection.roleArn} />
           <Detail
             label="Connected"
             value={connection.connectedAt.toLocaleDateString()}

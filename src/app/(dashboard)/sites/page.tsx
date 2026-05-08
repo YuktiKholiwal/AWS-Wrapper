@@ -76,10 +76,14 @@ export default async function SitesPage() {
                     {site.status}
                   </Badge>
                 </div>
-                <CardDescription className="font-mono text-xs">
-                  {site.cloudfrontUrl
-                    ? `https://${site.cloudfrontUrl}`
-                    : site.stackName}
+                <CardDescription className="text-xs">
+                  {site.cloudfrontUrl ? (
+                    <span className="font-mono">
+                      https://{site.cloudfrontUrl}
+                    </span>
+                  ) : (
+                    "Setting up..."
+                  )}
                 </CardDescription>
               </CardHeader>
             </Card>

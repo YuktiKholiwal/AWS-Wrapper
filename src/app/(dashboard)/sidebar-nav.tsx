@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/sites", label: "Sites", icon: Globe },
-  { href: "/connect", label: "Connect AWS", icon: Cloud },
+  { href: "/connect", label: "Connection", icon: Cloud },
 ];
 
 export function SidebarNav() {
