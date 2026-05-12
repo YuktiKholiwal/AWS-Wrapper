@@ -93,6 +93,11 @@ describe("POST /api/sites", () => {
       bucketName: null,
       distributionId: null,
       status: "pending",
+      customDomain: null,
+      domainStatus: "none" as const,
+      certificateArn: null,
+      validationCname: null,
+      validationValue: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -107,6 +112,11 @@ describe("POST /api/sites", () => {
       bucketName: null,
       distributionId: null,
       status: "provisioning",
+      customDomain: null,
+      domainStatus: "none" as const,
+      certificateArn: null,
+      validationCname: null,
+      validationValue: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

@@ -5,11 +5,13 @@ import {
   CreateStackCommand,
   DescribeStacksCommand,
   DeleteStackCommand,
+  UpdateStackCommand,
 } from "@aws-sdk/client-cloudformation";
 import {
   deployStack,
   getStackStatus,
   deleteStack,
+  updateStack,
 } from "@/lib/aws/cloudformation";
 
 const cfnMock = mockClient(CloudFormationClient);
@@ -142,6 +144,34 @@ describe("getStackStatus", () => {
     await expect(
       getStackStatus(fakeCreds, "us-east-1", "plot-site-test"),
     ).rejects.toThrow("Stack plot-site-test not found");
+  });
+});
+
+describe("updateStack", () => {
+  it("updates a stack and returns the stack ID", async () => {
+    cfnMock.on(UpdateStackCommand).resolves({
+      StackId: "arn:aws:cloudformation:us-east-1:123:stack/test/updated",
+    });
+
+    const stackId = await updateStack(
+      fakeCreds,
+      "us-east-1",
+      "plot-site-test",
+      "template-body",
+      { SiteName: "test", CustomDomain: "mysite.com" },
+    );
+
+    expect(stackId).toBe(
+      "arn:aws:cloudformation:us-east-1:123:stack/test/updated",
+    );
+  });
+
+  it("throws when no stack ID is returned", async () => {
+    cfnMock.on(UpdateStackCommand).resolves({ StackId: undefined });
+
+    await expect(
+      updateStack(fakeCreds, "us-east-1", "plot-site-test", "body", {}),
+    ).rejects.toThrow("UpdateStack did not return a stack ID");
   });
 });
 

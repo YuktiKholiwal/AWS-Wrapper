@@ -6,6 +6,17 @@ Parameters:
   SiteName:
     Type: String
     Description: Unique name for the site resources.
+  CustomDomain:
+    Type: String
+    Default: ""
+    Description: Optional custom domain name.
+  CertificateArn:
+    Type: String
+    Default: ""
+    Description: Optional ACM certificate ARN for the custom domain.
+
+Conditions:
+  HasCustomDomain: !Not [!Equals [!Ref CustomDomain, ""]]
 
 Resources:
   SiteBucket:
@@ -60,8 +71,16 @@ Resources:
             ResponseCode: 200
             ResponsePagePath: /index.html
             ErrorCachingMinTTL: 0
-        ViewerCertificate:
-          CloudFrontDefaultCertificate: true
+        Aliases: !If
+          - HasCustomDomain
+          - - !Ref CustomDomain
+          - !Ref "AWS::NoValue"
+        ViewerCertificate: !If
+          - HasCustomDomain
+          - AcmCertificateArn: !Ref CertificateArn
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          - CloudFrontDefaultCertificate: true
         HttpVersion: http2
 
   BucketPolicy:

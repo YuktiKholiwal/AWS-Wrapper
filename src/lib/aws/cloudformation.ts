@@ -3,6 +3,7 @@ import {
   CreateStackCommand,
   DescribeStacksCommand,
   DeleteStackCommand,
+  UpdateStackCommand,
 } from "@aws-sdk/client-cloudformation";
 import type { AwsTempCredentials } from "@/lib/aws/assume-role";
 
@@ -23,7 +24,10 @@ export type CfnStackStatus =
   | "DELETE_FAILED"
   | "UPDATE_IN_PROGRESS"
   | "UPDATE_COMPLETE"
-  | "UPDATE_FAILED";
+  | "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS"
+  | "UPDATE_FAILED"
+  | "UPDATE_ROLLBACK_IN_PROGRESS"
+  | "UPDATE_ROLLBACK_COMPLETE";
 
 export interface StackStatusResult {
   status: CfnStackStatus;
@@ -92,7 +96,10 @@ export async function getStackStatus(
   const status = stack.StackStatus as CfnStackStatus;
   const result: StackStatusResult = { status };
 
-  if (status === "CREATE_COMPLETE" && stack.Outputs) {
+  if (
+    (status === "CREATE_COMPLETE" || status === "UPDATE_COMPLETE") &&
+    stack.Outputs
+  ) {
     const getOutput = (key: string) =>
       stack.Outputs?.find((o) => o.OutputKey === key)?.OutputValue ?? "";
 
@@ -106,12 +113,42 @@ export async function getStackStatus(
   if (
     status === "CREATE_FAILED" ||
     status === "ROLLBACK_COMPLETE" ||
-    status === "ROLLBACK_IN_PROGRESS"
+    status === "ROLLBACK_IN_PROGRESS" ||
+    status === "UPDATE_FAILED" ||
+    status === "UPDATE_ROLLBACK_COMPLETE"
   ) {
     result.reason = stack.StackStatusReason ?? "Unknown failure";
   }
 
   return result;
+}
+
+export async function updateStack(
+  credentials: AwsTempCredentials,
+  region: string,
+  stackName: string,
+  templateBody: string,
+  parameters: Record<string, string>,
+): Promise<string> {
+  const client = getCfnClient(credentials, region);
+
+  const response = await client.send(
+    new UpdateStackCommand({
+      StackName: stackName,
+      TemplateBody: templateBody,
+      Parameters: Object.entries(parameters).map(([key, value]) => ({
+        ParameterKey: key,
+        ParameterValue: value,
+      })),
+      Capabilities: ["CAPABILITY_NAMED_IAM"],
+    }),
+  );
+
+  if (!response.StackId) {
+    throw new Error("UpdateStack did not return a stack ID");
+  }
+
+  return response.StackId;
 }
 
 export async function deleteStack(

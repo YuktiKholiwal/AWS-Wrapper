@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { FileUpload } from "@/components/file-upload";
 import { DeploymentList } from "./deployment-list";
+import { DomainCard } from "./domain-card";
 import {
   copyToClipboard,
   DetailRow,
@@ -209,6 +210,17 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
             </ol>
           </CardContent>
         </Card>
+      )}
+
+      {site.status === "live" && (
+        <DomainCard
+          siteId={site.id}
+          customDomain={site.customDomain}
+          domainStatus={site.domainStatus}
+          cloudfrontUrl={site.cloudfrontUrl}
+          validationCname={site.validationCname}
+          validationValue={site.validationValue}
+        />
       )}
 
       {site.status === "live" && (

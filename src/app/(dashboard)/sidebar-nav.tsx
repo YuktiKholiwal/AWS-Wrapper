@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Cloud, Globe } from "lucide-react";
+import { BookOpen, Cloud, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/sites", label: "Sites", icon: Globe },
   { href: "/connect", label: "Connection", icon: Cloud },
+  { href: "/learn", label: "Learn", icon: BookOpen },
 ];
 
 export function SidebarNav() {

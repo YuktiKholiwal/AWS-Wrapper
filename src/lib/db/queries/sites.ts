@@ -34,7 +34,15 @@ export async function updateSite(
   updates: Partial<
     Pick<
       Site,
-      "status" | "cloudfrontUrl" | "bucketName" | "distributionId"
+      | "status"
+      | "cloudfrontUrl"
+      | "bucketName"
+      | "distributionId"
+      | "customDomain"
+      | "domainStatus"
+      | "certificateArn"
+      | "validationCname"
+      | "validationValue"
     >
   >,
 ): Promise<Site> {

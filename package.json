@@ -19,6 +19,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@aws-sdk/client-acm": "^3.1045.0",
     "@aws-sdk/client-cloudformation": "^3.1041.0",
     "@aws-sdk/client-cloudfront": "^3.1041.0",
     "@aws-sdk/client-s3": "^3.1041.0",
