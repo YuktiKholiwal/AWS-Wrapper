@@ -12,6 +12,9 @@ const envSchema = z.object({
   CFN_TEMPLATE_URL: z
     .string()
     .regex(/^https:\/\/.+/, "CFN_TEMPLATE_URL must be a valid S3 https URL"),
+  GITHUB_APP_ID: z.string().optional(),
+  GITHUB_APP_PRIVATE_KEY: z.string().optional(),
+  GITHUB_WEBHOOK_SECRET: z.string().optional(),
 });
 
 function validateEnv() {

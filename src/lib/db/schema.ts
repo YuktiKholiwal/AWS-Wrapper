@@ -54,6 +54,9 @@ export const sites = pgTable("sites", {
   certificateArn: text("certificate_arn"),
   validationCname: text("validation_cname"),
   validationValue: text("validation_value"),
+  githubRepo: text("github_repo"),
+  githubBranch: text("github_branch"),
+  githubInstallationId: text("github_installation_id"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -69,6 +72,9 @@ export const deployments = pgTable("deployments", {
     .references(() => sites.id),
   status: deploymentStatusEnum("status").notNull().default("uploading"),
   fileCount: integer("file_count"),
+  source: text("source"),
+  commitSha: text("commit_sha"),
+  commitMessage: text("commit_message"),
   startedAt: timestamp("started_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

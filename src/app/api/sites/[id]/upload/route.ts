@@ -75,6 +75,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     siteId: site.id,
     status: "deploying",
     fileCount: files.length,
+    source: "manual",
   });
 
   try {

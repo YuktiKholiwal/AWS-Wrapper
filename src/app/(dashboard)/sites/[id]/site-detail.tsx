@@ -15,6 +15,7 @@ import {
 import { FileUpload } from "@/components/file-upload";
 import { DeploymentList } from "./deployment-list";
 import { DomainCard } from "./domain-card";
+import { GitHubCard } from "./github-card";
 import {
   copyToClipboard,
   DetailRow,
@@ -220,6 +221,14 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
           cloudfrontUrl={site.cloudfrontUrl}
           validationCname={site.validationCname}
           validationValue={site.validationValue}
+        />
+      )}
+
+      {site.status === "live" && (
+        <GitHubCard
+          siteId={site.id}
+          githubRepo={site.githubRepo}
+          githubBranch={site.githubBranch}
         />
       )}
 

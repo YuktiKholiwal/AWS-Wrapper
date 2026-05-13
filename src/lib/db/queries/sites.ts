@@ -43,6 +43,9 @@ export async function updateSite(
       | "certificateArn"
       | "validationCname"
       | "validationValue"
+      | "githubRepo"
+      | "githubBranch"
+      | "githubInstallationId"
     >
   >,
 ): Promise<Site> {
@@ -53,6 +56,19 @@ export async function updateSite(
     .returning();
 
   return rows[0];
+}
+
+export async function getSiteByGithubRepo(
+  repo: string,
+  branch: string,
+): Promise<Site | null> {
+  const rows = await db
+    .select()
+    .from(sites)
+    .where(eq(sites.githubRepo, repo));
+
+  const site = rows.find((s) => s.githubBranch === branch) ?? null;
+  return site;
 }
 
 export async function deleteSite(id: string): Promise<void> {
