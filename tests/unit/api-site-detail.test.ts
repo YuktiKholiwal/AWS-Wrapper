@@ -67,6 +67,9 @@ const fakeSite = {
   certificateArn: null,
   validationCname: null,
   validationValue: null,
+  githubRepo: null,
+  githubBranch: null,
+  githubInstallationId: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

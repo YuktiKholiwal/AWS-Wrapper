@@ -28,9 +28,16 @@ export function DeploymentList({ deployments }: DeploymentListProps) {
               key={dep.id}
               className="flex items-center justify-between text-sm"
             >
-              <span className="text-muted-foreground font-mono text-xs">
-                {dep.startedAt.toLocaleString()}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground font-mono text-xs">
+                  {dep.startedAt.toLocaleString()}
+                </span>
+                {dep.source === "github" && (
+                  <Badge variant="outline" className="text-xs">
+                    GitHub
+                  </Badge>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 {dep.fileCount && (
                   <span className="text-muted-foreground text-xs">

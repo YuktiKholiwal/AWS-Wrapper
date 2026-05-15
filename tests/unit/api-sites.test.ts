@@ -98,6 +98,9 @@ describe("POST /api/sites", () => {
       certificateArn: null,
       validationCname: null,
       validationValue: null,
+      githubRepo: null,
+      githubBranch: null,
+      githubInstallationId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -117,6 +120,9 @@ describe("POST /api/sites", () => {
       certificateArn: null,
       validationCname: null,
       validationValue: null,
+      githubRepo: null,
+      githubBranch: null,
+      githubInstallationId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
