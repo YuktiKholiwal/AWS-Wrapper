@@ -186,7 +186,7 @@ export function GitHubCard({
               id="repo"
               placeholder="owner/repo"
               value={repoInput}
-              onChange={(e) => setRepoInput(e.target.value)}
+              onChange={(e) => setRepoInput(e.target.value.trim())}
               required
             />
           </div>

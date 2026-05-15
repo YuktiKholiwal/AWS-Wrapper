@@ -10,9 +10,10 @@ interface RouteParams {
 const connectSchema = z.object({
   repo: z
     .string()
+    .trim()
     .regex(/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/, "Invalid repo format (owner/repo)"),
-  branch: z.string().min(1, "Branch is required"),
-  installationId: z.string().min(1, "Installation ID is required"),
+  branch: z.string().trim().min(1, "Branch is required"),
+  installationId: z.string().trim().min(1, "Installation ID is required"),
 });
 
 export async function POST(request: Request, { params }: RouteParams) {
