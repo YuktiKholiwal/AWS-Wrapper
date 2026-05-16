@@ -21,6 +21,14 @@ export const deploymentStatusEnum = pgEnum("deployment_status", [
   "failed",
 ]);
 
+export const functionStatusEnum = pgEnum("function_status", [
+  "pending",
+  "provisioning",
+  "live",
+  "failed",
+  "deleting",
+]);
+
 export const domainStatusEnum = pgEnum("domain_status", [
   "none",
   "pending_validation",
@@ -80,4 +88,25 @@ export const deployments = pgTable("deployments", {
     .defaultNow(),
   finishedAt: timestamp("finished_at", { withTimezone: true }),
   errorMessage: text("error_message"),
+});
+
+export const functions = pgTable("functions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  name: text("name").notNull(),
+  runtime: text("runtime").notNull().default("nodejs20.x"),
+  handler: text("handler").notNull().default("index.handler"),
+  code: text("code").notNull(),
+  timeout: integer("timeout").notNull().default(30),
+  memorySize: integer("memory_size").notNull().default(128),
+  stackName: text("stack_name").notNull().unique(),
+  functionArn: text("function_arn"),
+  apiEndpoint: text("api_endpoint"),
+  status: functionStatusEnum("status").notNull().default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
