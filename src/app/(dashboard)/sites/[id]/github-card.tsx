@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -13,31 +12,66 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { GitBranch } from "lucide-react";
+import { GitBranch, Loader2 } from "lucide-react";
 
 interface GitHubCardProps {
   siteId: string;
   githubRepo: string | null;
   githubBranch: string | null;
+  appSlug: string | null;
+}
+
+interface RepoOption {
+  fullName: string;
+  defaultBranch: string;
 }
 
 export function GitHubCard({
   siteId,
   githubRepo: initialRepo,
   githubBranch: initialBranch,
+  appSlug,
 }: GitHubCardProps) {
+  const searchParams = useSearchParams();
   const [repo, setRepo] = useState(initialRepo);
   const [branch, setBranch] = useState(initialBranch);
-  const [repoInput, setRepoInput] = useState("");
-  const [branchInput, setBranchInput] = useState("main");
-  const [installationId, setInstallationId] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
+  const [repos, setRepos] = useState<RepoOption[]>([]);
+  const [fetchingRepos, setFetchingRepos] = useState(false);
+  const [selectedRepo, setSelectedRepo] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("main");
+  const [installationId, setInstallationId] = useState<string | null>(null);
 
-  async function handleConnect(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
+  const fetchRepos = useCallback(async (instId: string) => {
+    setFetchingRepos(true);
+    try {
+      const res = await fetch(
+        `/api/github/repos?installation_id=${instId}`,
+      );
+      if (!res.ok) throw new Error("Failed to fetch repos");
+      const data = await res.json();
+      setRepos(data.repos);
+      if (data.repos.length === 1) {
+        setSelectedRepo(data.repos[0].fullName);
+        setSelectedBranch(data.repos[0].defaultBranch);
+      }
+    } catch {
+      toast.error("Could not load your repositories. Please try again.");
+    } finally {
+      setFetchingRepos(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const ghInstId = searchParams.get("github_installation_id");
+    if (ghInstId && !repo) {
+      setInstallationId(ghInstId);
+      fetchRepos(ghInstId);
+    }
+  }, [searchParams, repo, fetchRepos]);
+
+  async function handleConnect() {
+    if (!selectedRepo || !installationId) return;
     setLoading(true);
 
     try {
@@ -45,8 +79,8 @@ export function GitHubCard({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          repo: repoInput,
-          branch: branchInput,
+          repo: selectedRepo,
+          branch: selectedBranch,
           installationId,
         }),
       });
@@ -59,21 +93,20 @@ export function GitHubCard({
       const data = await res.json();
       setRepo(data.site.githubRepo);
       setBranch(data.site.githubBranch);
-      setShowForm(false);
-      toast.success("GitHub repo connected! Pushes will auto-deploy.");
+      toast.success("GitHub connected! Pushes will auto-deploy your site.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to connect");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to connect",
+      );
     } finally {
       setLoading(false);
     }
   }
 
   async function handleDisconnect() {
-    if (!confirm("Disconnect this GitHub repo? Auto-deploy will stop.")) {
-      return;
-    }
-
+    if (!confirm("Disconnect this repo? Auto-deploy will stop.")) return;
     setLoading(true);
+
     try {
       const res = await fetch(`/api/sites/${siteId}/github`, {
         method: "DELETE",
@@ -84,7 +117,9 @@ export function GitHubCard({
       }
       setRepo(null);
       setBranch(null);
-      toast.success("GitHub repo disconnected.");
+      setInstallationId(null);
+      setRepos([]);
+      toast.success("Repo disconnected.");
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to disconnect",
@@ -94,6 +129,7 @@ export function GitHubCard({
     }
   }
 
+  // Connected state
   if (repo && branch) {
     return (
       <Card>
@@ -106,8 +142,8 @@ export function GitHubCard({
             <Badge variant="default">Connected</Badge>
           </div>
           <CardDescription>
-            Pushes to <span className="font-mono font-medium">{branch}</span>{" "}
-            on{" "}
+            Pushes to{" "}
+            <span className="font-mono font-medium">{branch}</span> on{" "}
             <a
               href={`https://github.com/${repo}`}
               target="_blank"
@@ -133,101 +169,96 @@ export function GitHubCard({
     );
   }
 
-  if (!showForm) {
+  // Picking a repo after GitHub redirect
+  if (installationId && repos.length > 0) {
     return (
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
             <GitBranch className="h-4 w-4" />
-            <CardTitle className="text-base">Auto-deploy</CardTitle>
+            <CardTitle className="text-base">Pick a repository</CardTitle>
           </div>
           <CardDescription>
-            Connect a GitHub repo to auto-deploy on every push.
+            Choose which repo to deploy from.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
+          <div className="space-y-2">
+            {repos.map((r) => (
+              <button
+                key={r.fullName}
+                onClick={() => {
+                  setSelectedRepo(r.fullName);
+                  setSelectedBranch(r.defaultBranch);
+                }}
+                className={`w-full rounded-md border px-3 py-2 text-left text-sm transition-colors ${
+                  selectedRepo === r.fullName
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-foreground/20 hover:bg-muted/60"
+                }`}
+              >
+                <span className="font-medium">{r.fullName}</span>
+                <span className="text-muted-foreground ml-2 text-xs">
+                  ({r.defaultBranch})
+                </span>
+              </button>
+            ))}
+          </div>
           <Button
-            variant="outline"
-            onClick={() => setShowForm(true)}
+            onClick={handleConnect}
+            disabled={!selectedRepo || loading}
             className="w-full"
           >
-            Connect GitHub repo
+            {loading ? "Connecting..." : "Connect and enable auto-deploy"}
           </Button>
         </CardContent>
       </Card>
     );
   }
 
+  // Loading repos
+  if (fetchingRepos) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />
+          <span className="text-muted-foreground ml-2 text-sm">
+            Loading your repositories...
+          </span>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Initial state — not connected
+  const installUrl = appSlug
+    ? `https://github.com/apps/${appSlug}/installations/new?state=${siteId}`
+    : null;
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
           <GitBranch className="h-4 w-4" />
-          <CardTitle className="text-base">Connect GitHub repo</CardTitle>
+          <CardTitle className="text-base">Auto-deploy</CardTitle>
         </div>
         <CardDescription>
-          First,{" "}
-          <a
-            href="https://github.com/apps"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline"
-          >
-            install the Plot GitHub App
-          </a>{" "}
-          on your repo. Then enter the details below.
+          Connect a GitHub repo to auto-deploy on every push. No manual
+          uploads needed.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleConnect} className="space-y-3">
-          <div className="space-y-2">
-            <Label htmlFor="repo">Repository</Label>
-            <Input
-              id="repo"
-              placeholder="owner/repo"
-              value={repoInput}
-              onChange={(e) => setRepoInput(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="branch">Branch</Label>
-            <Input
-              id="branch"
-              value={branchInput}
-              onChange={(e) => setBranchInput(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="installationId">Installation ID</Label>
-            <Input
-              id="installationId"
-              placeholder="From the GitHub App redirect URL"
-              value={installationId}
-              onChange={(e) => setInstallationId(e.target.value)}
-              required
-            />
-            <p className="text-muted-foreground text-xs">
-              After installing the GitHub App, you&apos;ll be redirected with
-              an installation ID in the URL.
-            </p>
-          </div>
-          {error && <p className="text-destructive text-sm">{error}</p>}
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowForm(false)}
-              className="flex-1"
-            >
-              Cancel
+        {installUrl ? (
+          <a href={installUrl}>
+            <Button variant="outline" className="w-full">
+              Connect GitHub repo
             </Button>
-            <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? "Connecting..." : "Connect"}
-            </Button>
-          </div>
-        </form>
+          </a>
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            GitHub integration is not configured yet.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

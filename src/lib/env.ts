@@ -15,6 +15,7 @@ const envSchema = z.object({
   GITHUB_APP_ID: z.string().optional(),
   GITHUB_APP_PRIVATE_KEY: z.string().optional(),
   GITHUB_WEBHOOK_SECRET: z.string().optional(),
+  NEXT_PUBLIC_GITHUB_APP_SLUG: z.string().optional(),
 });
 
 function validateEnv() {

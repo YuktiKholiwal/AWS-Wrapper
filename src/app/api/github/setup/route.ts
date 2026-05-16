@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
 export async function GET(request: Request) {
+  const { userId } = await auth();
   const url = new URL(request.url);
   const installationId = url.searchParams.get("installation_id");
-  const setupAction = url.searchParams.get("setup_action");
+  const siteId = url.searchParams.get("state");
 
-  if (setupAction === "install" && installationId) {
+  if (installationId && siteId && userId) {
     return NextResponse.redirect(
-      new URL(`/sites?github_installation_id=${installationId}`, url.origin),
+      new URL(
+        `/sites/${siteId}?github_installation_id=${installationId}`,
+        url.origin,
+      ),
     );
   }
 

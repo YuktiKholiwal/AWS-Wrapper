@@ -229,6 +229,7 @@ export function SiteDetail({ site, deployments }: SiteDetailProps) {
           siteId={site.id}
           githubRepo={site.githubRepo}
           githubBranch={site.githubBranch}
+          appSlug={process.env.NEXT_PUBLIC_GITHUB_APP_SLUG ?? null}
         />
       )}
 
