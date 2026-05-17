@@ -28,7 +28,7 @@ const features = [
 
 export default async function Home() {
   const { userId } = await auth();
-  if (userId) redirect("/sites");
+  if (userId) redirect("/getting-started");
   return (
     <main className="flex flex-1 flex-col">
       <nav className="flex items-center justify-between px-6 py-4">
