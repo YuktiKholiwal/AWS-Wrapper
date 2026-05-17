@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Cloud, Globe } from "lucide-react";
+import { BookOpen, Cloud, Globe, Rocket } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { href: "/getting-started", label: "Get Started", icon: Rocket },
   { href: "/sites", label: "Sites", icon: Globe },
   { href: "/connect", label: "Connection", icon: Cloud },
   { href: "/learn", label: "Learn", icon: BookOpen },

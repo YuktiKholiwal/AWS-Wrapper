@@ -94,6 +94,19 @@ export default function LearnPage() {
         here&apos;s the plain-English version.
       </p>
 
+      <Card className="mb-8 border-primary/30 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="text-base">New here?</CardTitle>
+          <CardDescription>
+            Check out the{" "}
+            <a href="/getting-started" className="text-primary hover:underline">
+              Getting Started guide
+            </a>{" "}
+            for a step-by-step walkthrough of how to deploy your first site.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="text-base">The big picture</CardTitle>
