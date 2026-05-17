@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Cloud, Globe } from "lucide-react";
+import { BookOpen, Cloud, Globe, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/sites", label: "Sites", icon: Globe },
+  { href: "/functions", label: "Functions", icon: Zap },
   { href: "/connect", label: "Connection", icon: Cloud },
   { href: "/learn", label: "Learn", icon: BookOpen },
 ];

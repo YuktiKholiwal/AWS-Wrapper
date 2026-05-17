@@ -32,6 +32,7 @@ export type CfnStackStatus =
 export interface StackStatusResult {
   status: CfnStackStatus;
   outputs?: StackOutputs;
+  rawOutputs?: Record<string, string>;
   reason?: string;
 }
 
@@ -108,6 +109,14 @@ export async function getStackStatus(
       distributionId: getOutput("DistributionId"),
       distributionDomainName: getOutput("DistributionDomainName"),
     };
+
+    const raw: Record<string, string> = {};
+    for (const o of stack.Outputs) {
+      if (o.OutputKey && o.OutputValue) {
+        raw[o.OutputKey] = o.OutputValue;
+      }
+    }
+    result.rawOutputs = raw;
   }
 
   if (
