@@ -1,5 +1,6 @@
 import {
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -19,6 +20,14 @@ export const deploymentStatusEnum = pgEnum("deployment_status", [
   "deploying",
   "live",
   "failed",
+]);
+
+export const databaseStatusEnum = pgEnum("database_status", [
+  "pending",
+  "provisioning",
+  "live",
+  "failed",
+  "deleting",
 ]);
 
 export const functionStatusEnum = pgEnum("function_status", [
@@ -102,7 +111,25 @@ export const functions = pgTable("functions", {
   stackName: text("stack_name").notNull().unique(),
   functionArn: text("function_arn"),
   apiEndpoint: text("api_endpoint"),
+  envVars: jsonb("env_vars").$type<Record<string, string>>().default({}),
   status: functionStatusEnum("status").notNull().default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const databases = pgTable("databases", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  name: text("name").notNull(),
+  stackName: text("stack_name").notNull().unique(),
+  tableName: text("table_name"),
+  tableArn: text("table_arn"),
+  region: text("region"),
+  status: databaseStatusEnum("status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

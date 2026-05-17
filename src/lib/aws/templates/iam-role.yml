@@ -90,7 +90,18 @@ Resources:
                 Action:
                   - "logs:CreateLogGroup"
                   - "logs:DeleteLogGroup"
-                Resource: !Sub "arn:aws:logs:*:${AWS::AccountId}:log-group:/aws/lambda/plot-fn-*"
+                  - "logs:DescribeLogStreams"
+                  - "logs:GetLogEvents"
+                  - "logs:FilterLogEvents"
+                Resource: !Sub "arn:aws:logs:*:${AWS::AccountId}:log-group:/aws/lambda/plot-fn-*:*"
+              - Sid: DynamoDBManagement
+                Effect: Allow
+                Action:
+                  - "dynamodb:CreateTable"
+                  - "dynamodb:DeleteTable"
+                  - "dynamodb:DescribeTable"
+                  - "dynamodb:ListTables"
+                Resource: !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/plot-db-*"
               - Sid: CloudFrontServiceLinkedRole
                 Effect: Allow
                 Action: "iam:CreateServiceLinkedRole"

@@ -46,6 +46,7 @@ export async function updateFunction(
       | "status"
       | "functionArn"
       | "apiEndpoint"
+      | "envVars"
     >
   >,
 ): Promise<LambdaFunction> {

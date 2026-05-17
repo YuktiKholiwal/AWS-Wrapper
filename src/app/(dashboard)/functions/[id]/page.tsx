@@ -6,6 +6,8 @@ import { getAwsConnection } from "@/lib/db/queries/aws-connections";
 import { getFunction } from "@/lib/db/queries/functions";
 import { FunctionEditor } from "./function-editor";
 import { FunctionProvisioningStatus } from "./function-status";
+import { EnvVarsPanel } from "./env-vars-panel";
+import { LogsPanel } from "./logs-panel";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -38,16 +40,29 @@ export default async function FunctionDetailPage({ params }: PageProps) {
           functionName={fn.name}
         />
       ) : (
-        <FunctionEditor
-          fn={{
-            id: fn.id,
-            name: fn.name,
-            code: fn.code,
-            status: fn.status,
-            apiEndpoint: fn.apiEndpoint,
-            runtime: fn.runtime,
-          }}
-        />
+        <>
+          <FunctionEditor
+            fn={{
+              id: fn.id,
+              name: fn.name,
+              code: fn.code,
+              status: fn.status,
+              apiEndpoint: fn.apiEndpoint,
+              runtime: fn.runtime,
+            }}
+          />
+          <div className="mt-4 space-y-4">
+            <EnvVarsPanel
+              functionId={fn.id}
+              initialVars={(fn.envVars as Record<string, string>) ?? {}}
+              isLive={fn.status === "live"}
+            />
+            <LogsPanel
+              functionId={fn.id}
+              isLive={fn.status === "live"}
+            />
+          </div>
+        </>
       )}
     </div>
   );
